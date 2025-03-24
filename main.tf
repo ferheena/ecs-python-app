@@ -26,6 +26,8 @@ module "vpc" {
   }
 }
 
-module "ecr" {
-  source = "./ecr.tf"
+resource "" "aws_ecr_repository"
+"python_app" {
+  name = "python-ecs-app"
 }
+
