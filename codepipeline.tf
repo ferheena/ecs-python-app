@@ -1,3 +1,11 @@
+resource "aws_s3_bucket" "artifacts" {
+  bucket = "ecs-artifacts-${random_id.suffix.hex}"
+}
+
+resource "random_id" "suffix" {
+  byte_length = 4
+}
+
 resource "aws_iam_role" "codepipeline_role" {
   name = "codepipeline-role"
 
@@ -39,9 +47,9 @@ resource "aws_codepipeline" "python_pipeline" {
       output_artifacts = ["source_output"]
 
       configuration = {
-        Owner  = var.github_owner
-        Repo   = var.repo_name
-        Branch = "main"
+        Owner      = var.github_owner
+        Repo       = var.repo_name
+        Branch     = "main"
         OAuthToken = var.github_token
       }
     }
@@ -64,12 +72,4 @@ resource "aws_codepipeline" "python_pipeline" {
       }
     }
   }
-}
-
-resource "aws_s3_bucket" "artifacts" {
-  bucket = "ecs-artifacts-bucket-${random_id.suffix.hex}"
-}
-
-resource "random_id" "suffix" {
-  byte_length = 4
 }

@@ -22,6 +22,25 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+resource "aws_security_group" "ecs_sg" {
+  name   = "ecs-sg"
+  vpc_id = module.vpc.vpc_id
+
+  ingress {
+    from_port   = 5000
+    to_port     = 5000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 resource "aws_ecs_task_definition" "python_task" {
   family                   = "python-app-task"
   requires_compatibilities = ["FARGATE"]
@@ -29,7 +48,8 @@ resource "aws_ecs_task_definition" "python_task" {
   cpu                     = "256"
   memory                  = "512"
   execution_role_arn      = aws_iam_role.ecs_task_execution_role.arn
-  container_definitions   = jsonencode([
+
+  container_definitions = jsonencode([
     {
       name      = "python-app"
       image     = "${aws_ecr_repository.python_app.repository_url}:latest"
@@ -58,23 +78,4 @@ resource "aws_ecs_service" "python_service" {
   }
 
   depends_on = [aws_ecs_task_definition.python_task]
-}
-
-resource "aws_security_group" "ecs_sg" {
-  name   = "ecs-sg"
-  vpc_id = module.vpc.vpc_id
-
-  ingress {
-    from_port   = 5000
-    to_port     = 5000
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
 }
